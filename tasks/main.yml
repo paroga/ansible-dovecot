@@ -11,6 +11,13 @@
     - [ '{{ "dovecot-pop3d" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
 
+- name: Install Dovecot GSSAPI package
+  apt:
+    pkg: 'dovecot-gssapi'
+    state: 'present'
+    install_recommends: 'no'
+  when: ('gssapi' in dovecot_auth_mechanisms)
+
 - name: Generate Dovecot configuration
   template:
     src: "{{ lookup('template_src', 'etc/dovecot/local.conf.j2') }}"

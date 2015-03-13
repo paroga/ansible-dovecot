@@ -10,13 +10,7 @@
     - [ '{{ "dovecot-imapd" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else [] }}' ]
     - [ '{{ "dovecot-pop3d" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
-
-- name: Install Dovecot GSSAPI package
-  apt:
-    pkg: 'dovecot-gssapi'
-    state: 'present'
-    install_recommends: 'no'
-  when: ('gssapi' in dovecot_auth_mechanisms)
+    - [ '{{ "dovecot-gssapi" if "gssapi" in dovecot_auth_mechanisms else [] }}' ]
 
 - name: Generate Dovecot configuration
   template:

@@ -29,3 +29,10 @@
     group: 'adm'
     mode: '0644'
   notify: [ 'Restart ferm' ]
+
+- name: Check krb5 keytab permissions
+  file:
+    path: '{{ dovecot_krb5_keytab }}'
+    owner: 'root'
+    group: 'dovecot'
+    mode: '0640'

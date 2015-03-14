@@ -4,7 +4,7 @@
 auth_mechanisms	= {{ " ".join(dovecot_auth_mechanisms) }}
 {% if 'gssapi' in dovecot_auth_mechanisms %}
 auth_gssapi_hostname = {{ ansible_fqdn }}
-auth_krb5_keytab = /etc/dovecot/dovecot.keytab
+auth_krb5_keytab = {{ dovecot_krb5_keytab }}
 {% endif %}
 
 {% if 'imaps' in dovecot_protocols or 'pop3s' in dovecot_protocols %}

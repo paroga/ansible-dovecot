@@ -24,6 +24,16 @@ dovecot_protocols: [ 'imap', 'imaps' ]
 dovecot_auth_mechanisms: [ 'plain', 'login' ]
 
 
+# --------------------------------
+#   Authentication configuration
+# --------------------------------
+
+# .. envvar:: dovecot_krb5_keytab
+#
+# Kerberos keytab to use for the GSSAPI mechanism.
+dovecot_krb5_keytab: '/etc/dovecot/krb5.keytab'
+
+
 # ---------------------------
 #   PKI / TLS configuration
 # ---------------------------

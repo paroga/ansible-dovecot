@@ -5,6 +5,20 @@ auth_mechanisms	= {{ " ".join(dovecot_auth_mechanisms) }}
 {% if 'gssapi' in dovecot_auth_mechanisms %}
 auth_gssapi_hostname = {{ ansible_fqdn }}
 auth_krb5_keytab = {{ dovecot_krb5_keytab }}
+{% if dovecot_user_accounts == 'system' %}
+passdb {
+    driver = pam
+    args = session=yes dovecot
+}
+{% endif %}
+
+# User/Mailbox settings
+mail_location = {{ dovecot_mail_location }}
+{% if dovecot_user_accounts == 'system' %}
+userdb {
+    driver = passwd
+    args = blocking=no
+}
 {% endif %}
 
 {% if 'imaps' in dovecot_protocols or 'pop3s' in dovecot_protocols %}
@@ -26,4 +40,9 @@ ssl_cipher_list	= {{ dovecot_ssl_cipher_list }}
 # want your passwords to be safe, enable imaps/pops or disable plaintext authentication!
 disable_plaintext_auth=no
 {% endif %}
+{% endif %}
+{% if dovecot_custom_localconf is defined and dovecot_custom_localconf %}
+
+# Local configuration
+{{ dovecot_custom_localconf }}
 {% endif %}

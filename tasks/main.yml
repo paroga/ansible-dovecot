@@ -12,6 +12,16 @@
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-gssapi" if "gssapi" in dovecot_auth_mechanisms else [] }}' ]
 
+- name: Disable default configuration
+  lineinfile:
+    dest: '/etc/dovecot/conf.d/{{ item.path }}'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    backrefs: 'yes'
+  with_items:
+    - { path: '10-auth.conf', regexp: '^(!include auth-system\.conf\.ext)', line: '#\1' }
+    - { path: '10-mail.conf', regexp: '^(mail_location.*)', line: '#\1' }
+
 - name: Generate Dovecot configuration
   template:
     src: "{{ lookup('template_src', 'etc/dovecot/local.conf.j2') }}"

@@ -1,5 +1,8 @@
 ---
 
+- name: Pre hooks
+  include: "{{ lookup('task_src', 'dovecot/pre_main.yml') }}"
+
 - name: Install Dovecot packages
   apt:
     pkg: '{{ item }}'
@@ -54,3 +57,6 @@
     owner: 'root'
     group: 'dovecot'
     mode: '0640'
+
+- name: Post hooks
+  include: "{{ lookup('task_src', 'dovecot/post_main.yml') }}"

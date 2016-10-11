@@ -13,6 +13,7 @@
     - [ '{{ "dovecot-imapd" if "imap" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-pop3d" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-lmtpd" if "lmtp" in dovecot_protocols else [] }}' ]
+    - [ '{{ "dovecot-ldap" if "ldap" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "dovecot-mysql" if (("sql" in dovecot_user_accounts) and ("mysql" in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-pgsql" if (("sql" in dovecot_user_accounts) and ("pgsql" in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
@@ -26,6 +27,7 @@
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
+    - [ '{{ "auth-ldap.conf.ext" if "ldap" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" in dovecot_protocols else [] }}' ]
@@ -59,6 +61,7 @@
     - [ '{{ "dovecot-imapd" if "imap" not in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-pop3d" if "pop3" not in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-lmtpd" if "lmtp" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "dovecot-ldap" if "ldap" not in dovecot_user_accounts else [] }}' ]
     - [ '{{ "dovecot-mysql" if (("sql" not in dovecot_user_accounts) or ("mysql" not in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-pgsql" if (("sql" not in dovecot_user_accounts) or ("pgsql" not in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" not in dovecot_protocols else [] }}' ]
@@ -77,6 +80,7 @@
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
+    - [ '{{ "auth-ldap.conf.ext" if "ldap" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-passwdfile.conf.ext" if "passwdfile" in dovecot_user_accounts else [] }}' ]
@@ -91,6 +95,16 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart dovecot' ]
+
+- name: Generate Dovecot ldap configuration
+  template:
+    src: "{{ lookup('template_src', 'etc/dovecot/dovecot-ldap.conf.ext.j2') }}"
+    dest: '/etc/dovecot/dovecot-ldap.conf.ext'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  notify: [ 'Restart dovecot' ]
+  when: "'ldap' in dovecot_user_accounts"
 
 - name: Generate Dovecot sql configuration
   template:
@@ -143,7 +157,23 @@
     system: yes
   when: "'passwdfile' in dovecot_user_accounts"
 
+- name: Create group used in ldap
+  user:
+    name: "{{ dovecot_ldap_gid }}"
+    system: yes
+  when: "'ldap' in dovecot_user_accounts"
 
+- name: Create user used in ldap
+  user:
+    name: "{{ dovecot_ldap_uid }}"
+    group: "{{ dovecot_ldap_gid }}"
+    home: "{{ dovecot_ldap_home }}"
+    shell: "/usr/sbin/nologin"
+    system: yes
+  when: "'ldap' in dovecot_user_accounts"
+
+- include: ldap_account.yml
+  when: "'ldap' in dovecot_user_accounts"
 
 - name: Post hooks
   include: "{{ lookup('task_src', 'dovecot/post_main.yml') }}"

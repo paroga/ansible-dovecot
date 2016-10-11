@@ -42,6 +42,7 @@ dovecot_dependencies: True
 # - ``system``: Mail users are Linux system users
 # - ``sql``: Mail users are stored in a SQL database
 # - ``passwdfile``: Users password are stored in a file
+# - ``ldap``: Mail users are stored in a LDAP directory
 #
 dovecot_user_accounts: [ 'deny', 'system' ]
 
@@ -169,6 +170,65 @@ dovecot_passwdfile_home: '{{ (ansible_local.root.home
 #
 # Path inside the mailbox home directory
 dovecot_passwdfile_mailbox_path: '%u'
+
+# .. envvar:: dovecot_ldap_uid
+#
+# uid use by Dovecot when it store mail in mailbox
+dovecot_ldap_uid: 'dovecot-vmail'
+
+# .. envvar:: dovecot_ldap_gid
+#
+# gid use by Dovecot when it store mail in mailbox
+dovecot_ldap_gid: 'dovecot-vmail'
+
+# .. envvar:: dovecot_ldap_home
+#
+# Path to the mailbox
+dovecot_ldap_home: '{{ (ansible_local.root.home
+                       if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.home|d())
+                       else "/var/local") + "/" + dovecot_ldap_uid }}'
+
+# .. envvar:: dovecot_ldap_mailbox_path
+#
+# Path inside the mailbox home directory
+dovecot_ldap_mailbox_path: '%u'
+
+# .. envvar:: dovecot_ldap_domain
+#
+dovecot_ldap_domain: '{{ ansible_domain }}'
+
+# .. envvar:: dovecot_ldap_base
+#
+dovecot_ldap_base: '{{ "dc=" + dovecot_ldap_domain.split(".") | join(",dc=") }}'
+
+# .. envvar:: dovecot_ldap_host
+#
+dovecot_ldap_host: 'ldap.{{ ansible_domain }}'
+
+# .. envvar:: dovecot_ldap_port
+#
+dovecot_ldap_port: '389'
+
+# .. envvar:: dovecot_ldap_hosts
+#
+dovecot_ldap_hosts: '{{ dovecot_ldap_host + ":" + dovecot_ldap_port }}'
+
+# .. envvar:: dovecot_ldap_dn
+#
+dovecot_ldap_dn: '{{ "cn=dovecot," + secret_ldap_services_dn }}'
+
+# .. envvar:: dovecot_ldap_dnpass_file
+#
+dovecot_ldap_dnpass_file: '{{ secret + "/credentials/" + dovecot_ldap_host + "/slapd/" + dovecot_ldap_base + "/" + dovecot_ldap_dn + ".password" }}'
+
+# .. envvar:: dovecot_ldap_dnpass
+#
+dovecot_ldap_dnpass: '{{ lookup("password", dovecot_ldap_dnpass_file) }}'
+
+# .. envvar:: dovecot_ldap_tls
+#
+dovecot_ldap_tls: 'yes'
 
 # ---------------------------
 #   PKI / TLS configuration

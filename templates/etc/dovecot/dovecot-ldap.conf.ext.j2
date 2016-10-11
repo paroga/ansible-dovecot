@@ -1,0 +1,239 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+# This file is commonly accessed via passdb {} or userdb {} section in
+# conf.d/auth-ldap.conf.ext
+
+# This file is opened as root, so it should be owned by root and mode 0600.
+#
+# http://wiki2.dovecot.org/AuthDatabase/LDAP
+#
+# NOTE: If you're not using authentication binds, you'll need to give
+# dovecot-auth read access to userPassword field in the LDAP server.
+# With OpenLDAP this is done by modifying /etc/ldap/slapd.conf. There should
+# already be something like this:
+
+# access to attribute=userPassword
+#        by dn="<dovecot's dn>" read # add this
+#        by anonymous auth
+#        by self write
+#        by * none
+
+# Space separated list of LDAP hosts to use. host:port is allowed too.
+#hosts =
+{% if dovecot_ldap_hosts is defined and dovecot_ldap_hosts %}
+hosts = {{ dovecot_ldap_hosts }}
+{% endif %}
+
+# LDAP URIs to use. You can use this instead of hosts list. Note that this
+# setting isn't supported by all LDAP libraries.
+#uris =
+{% if dovecot_ldap_uris is defined and dovecot_ldap_uris %}
+uris = {{ dovecot_ldap_uris }}
+{% endif %}
+
+# Distinguished Name - the username used to login to the LDAP server.
+# Leave it commented out to bind anonymously (useful with auth_bind=yes).
+#dn =
+{% if dovecot_ldap_dn is defined and dovecot_ldap_dn %}
+dn = {{ dovecot_ldap_dn }}
+{% endif %}
+
+# Password for LDAP server, if dn is specified.
+#dnpass =
+{% if dovecot_ldap_dnpass is defined and dovecot_ldap_dnpass %}
+dnpass = {{ dovecot_ldap_dnpass }}
+{% endif %}
+
+# Use SASL binding instead of the simple binding. Note that this changes
+# ldap_version automatically to be 3 if it's lower. Also note that SASL binds
+# and auth_bind=yes don't work together.
+#sasl_bind = no
+{% if dovecot_ldap_sasl_bind is defined and dovecot_ldap_sasl_bind %}
+sasl_bind = {{ dovecot_ldap_sasl_bind }}
+{% endif %}
+# SASL mechanism name to use.
+#sasl_mech =
+{% if dovecot_ldap_sasl_mech is defined and dovecot_ldap_sasl_mech %}
+sasl_mech = {{ dovecot_ldap_sasl_mech }}
+{% endif %}
+# SASL realm to use.
+#sasl_realm =
+{% if dovecot_ldap_sasl_realm is defined and dovecot_ldap_sasl_realm %}
+sasl_realm = {{ dovecot_ldap_sasl_realm }}
+{% endif %}
+# SASL authorization ID, ie. the dnpass is for this "master user", but the
+# dn is still the logged in user. Normally you want to keep this empty.
+#sasl_authz_id =
+{% if dovecot_ldap_sasl_authz_id is defined and dovecot_ldap_sasl_authz_id %}
+sasl_authz_id = {{ dovecot_ldap_ }}
+{% endif %}
+
+# Use TLS to connect to the LDAP server.
+#tls = no
+{% if dovecot_ldap_tls is defined and dovecot_ldap_tls %}
+tls = {{ dovecot_ldap_tls }}
+{% endif %}
+# TLS options, currently supported only with OpenLDAP:
+#tls_ca_cert_file =
+{% if dovecot_ldap_tls_ca_cert_file is defined and dovecot_ldap_tls_ca_cert_file %}
+tls_ca_cert_file = {{ dovecot_ldap_tls_ca_cert_file }}
+{% endif %}
+#tls_ca_cert_dir =
+{% if dovecot_ldap_tls_ca_cert_dir is defined and dovecot_ldap_tls_ca_cert_dir %}
+tls_ca_cert_dir = {{ dovecot_ldap_tls_ca_cert_dir }}
+{% endif %}
+#tls_cipher_suite =
+{% if dovecot_ldap_tls_cipher_suite is defined and dovecot_ldap_tls_cipher_suite %}
+tls_cipher_suite = {{ dovecot_ldap_tls_cipher_suite }}
+{% endif %}
+# TLS cert/key is used only if LDAP server requires a client certificate.
+#tls_cert_file =
+{% if dovecot_ldap_tls_cert_file is defined and dovecot_ldap_tls_cert_file %}
+tls_cert_file = {{ dovecot_ldap_tls_cert_file }}
+{% endif %}
+#tls_key_file =
+{% if dovecot_ldap_tls_key_file is defined and dovecot_ldap_tls_key_file %}
+tls_key_file = {{ dovecot_ldap_tls_key_file }}
+{% endif %}
+# Valid values: never, hard, demand, allow, try
+#tls_require_cert =
+{% if dovecot_ldap_tls_require_cert is defined and dovecot_ldap_tls_require_cert %}
+tls_require_cert = {{ dovecot_ldap_tls_require_cert }}
+{% endif %}
+
+# Use the given ldaprc path.
+#ldaprc_path =
+{% if dovecot_ldap_ldaprc_path is defined and dovecot_ldap_ldaprc_path %}
+ldaprc_path = {{ dovecot_ldap_ldaprc_path }}
+{% endif %}
+
+# LDAP library debug level as specified by LDAP_DEBUG_* in ldap_log.h.
+# -1 = everything. You may need to recompile OpenLDAP with debugging enabled
+# to get enough output.
+#debug_level = 0
+{% if dovecot_ldap_debug_level is defined and dovecot_ldap_debug_level %}
+debug_level = {{ dovecot_ldap_debug_level }}
+{% endif %}
+
+# Use authentication binding for verifying password's validity. This works by
+# logging into LDAP server using the username and password given by client.
+# The pass_filter is used to find the DN for the user. Note that the pass_attrs
+# is still used, only the password field is ignored in it. Before doing any
+# search, the binding is switched back to the default DN.
+#auth_bind = no
+{% if dovecot_ldap_auth_bind is defined and dovecot_ldap_auth_bind %}
+auth_bind = {{ dovecot_ldap_auth_bind }}
+{% endif %}
+
+# If authentication binding is used, you can save one LDAP request per login
+# if users' DN can be specified with a common template. The template can use
+# the standard %variables (see user_filter). Note that you can't
+# use any pass_attrs if you use this setting.
+#
+# If you use this setting, it's a good idea to use a different
+# dovecot-ldap.conf.ext for userdb (it can even be a symlink, just as long as
+# the filename is different in userdb's args). That way one connection is used
+# only for LDAP binds and another connection is used for user lookups.
+# Otherwise the binding is changed to the default DN before each user lookup.
+#
+# For example:
+#   auth_bind_userdn = cn=%u,ou=people,o=org
+#
+#auth_bind_userdn =
+{% if dovecot_ldap_auth_bind_userdn is defined and dovecot_ldap_auth_bind_userdn %}
+auth_bind_userdn = {{ dovecot_ldap_auth_bind_userdn }}
+{% endif %}
+
+# LDAP protocol version to use. Likely 2 or 3.
+#ldap_version = 3
+{% if dovecot_ldap_ldap_version is defined and dovecot_ldap_ldap_version %}
+ldap_version = {{ dovecot_ldap_ldap_version }}
+{% endif %}
+
+# LDAP base. %variables can be used here.
+# For example: dc=mail, dc=example, dc=org
+base = {{ dovecot_ldap_base }}
+
+# Dereference: never, searching, finding, always
+#deref = never
+{% if dovecot_ldap_deref is defined and dovecot_ldap_deref %}
+deref = {{ dovecot_ldap_deref }}
+{% endif %}
+
+# Search scope: base, onelevel, subtree
+#scope = subtree
+{% if dovecot_ldap_scope is defined and dovecot_ldap_scope %}
+scope = {{ dovecot_ldap_scope }}
+{% endif %}
+
+# User attributes are given in LDAP-name=dovecot-internal-name list. The
+# internal names are:
+#   uid - System UID
+#   gid - System GID
+#   home - Home directory
+#   mail - Mail location
+#
+# There are also other special fields which can be returned, see
+# http://wiki2.dovecot.org/UserDatabase/ExtraFields
+#user_attrs = homeDirectory=home,uidNumber=uid,gidNumber=gid
+{% if dovecot_ldap_user_attrs is defined and dovecot_ldap_user_attrs %}
+user_attrs = {{ dovecot_ldap_user_attrs }}
+{% endif %}
+
+# Filter for user lookup. Some variables can be used (see
+# http://wiki2.dovecot.org/Variables for full list):
+#   %u - username
+#   %n - user part in user@domain, same as %u if there's no domain
+#   %d - domain part in user@domain, empty if user there's no domain
+#user_filter = (&(objectClass=posixAccount)(uid=%u))
+{% if dovecot_ldap_user_filter is defined and dovecot_ldap_user_filter %}
+user_filter = {{ dovecot_ldap_user_filter }}
+{% endif %}
+
+# Password checking attributes:
+#  user: Virtual user name (user@domain), if you wish to change the
+#        user-given username to something else
+#  password: Password, may optionally start with {type}, eg. {crypt}
+# There are also other special fields which can be returned, see
+# http://wiki2.dovecot.org/PasswordDatabase/ExtraFields
+#pass_attrs = uid=user,userPassword=password
+{% if dovecot_ldap_pass_attrs is defined and dovecot_ldap_pass_attrs %}
+pass_attrs = {{ dovecot_ldap_pass_attrs }}
+{% endif %}
+
+# If you wish to avoid two LDAP lookups (passdb + userdb), you can use
+# userdb prefetch instead of userdb ldap in dovecot.conf. In that case you'll
+# also have to include user_attrs in pass_attrs field prefixed with "userdb_"
+# string. For example:
+#pass_attrs = uid=user,userPassword=password,\
+#  homeDirectory=userdb_home,uidNumber=userdb_uid,gidNumber=userdb_gid
+
+# Filter for password lookups
+#pass_filter = (&(objectClass=posixAccount)(uid=%u))
+{% if dovecot_ldap_pass_filter is defined and dovecot_ldap_pass_filter %}
+pass_filter = {{ dovecot_ldap_pass_filter }}
+{% endif %}
+
+# Attributes and filter to get a list of all users
+#iterate_attrs = uid=user
+{% if dovecot_ldap_iterate_attrs is defined and dovecot_ldap_iterate_attrs %}
+iterate_attrs = {{ dovecot_ldap_iterate_attrs }}
+{% endif %}
+#iterate_filter = (objectClass=posixAccount)
+{% if dovecot_ldap_iterate_filter is defined and dovecot_ldap_iterate_filter %}
+iterate_filter = {{ dovecot_ldap_iterate_filter }}
+{% endif %}
+
+# Default password scheme. "{scheme}" before password overrides this.
+# List of supported schemes is in: http://wiki2.dovecot.org/Authentication
+#default_pass_scheme = CRYPT
+{% if dovecot_ldap_default_pass_scheme is defined and dovecot_ldap_default_pass_scheme %}
+default_pass_scheme = {{ dovecot_ldap_default_pass_scheme }}
+{% endif %}
